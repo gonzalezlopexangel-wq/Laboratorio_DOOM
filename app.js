@@ -7,3 +7,28 @@ const data = [
   { id: "p06", title: "Ruta", desc: "Camino en perspectiva", src: "https://picsum.photos/id/1005/1200/675" }
 ];
 
+//SELAÑAR ELEMENTOS DE DOOM 
+const thumbs = document.querySelector("#thumbs");
+const heroImg = document.querySelector("#heroImg");
+const heroTitle = document.querySelector("#heroTitle");
+const heroDesc = document.querySelector("#heroDesc");
+const LikeBtn = document.querySelector("#LikeBtn");
+const counter = document.querySelector("#counter");
+
+//VARIABLES PARA EL ESTADO DE LA APLICACION 
+let currentIndex = 0;
+let likes = {};
+
+//FUNCION PARA RENDERIZAR LAS MINIATURAS
+function renderThumbs(){
+  thumbs.innerHTML = data.map((item, index) =>{
+    return`
+    <article class="thumb ${index === currentIndex ? "active":""}data-index="${index}">
+    <span class ="badge">${index + 1}</span>
+    <img src="${item.src}" alt="${item.title}"/>
+  </article>
+  `;
+  }).join("");
+}
+
+renderThumbs();
