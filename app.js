@@ -171,6 +171,6 @@ document.addEventListener("keydown", (e) => {
 
 // Actualizar estado visual inicial
 renderThumbs();
-renderHero(currentIndex);
+renderHero(currentIndex);J
 updateActiveThumb();
 updateLikeBtn();
