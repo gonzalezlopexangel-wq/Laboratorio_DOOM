@@ -19,13 +19,18 @@ const prevBtn = document.querySelector("#prevBtn");
 const nextBtn = document.querySelector("#nextBtn");
 const playBtn = document.querySelector("#playBtn");
 
+if (!thumbs || !heroImg || !heroTitle || !heroDesc || !likeBtn || !counter || !prevBtn || !nextBtn || !playBtn) {
+  console.error("Error: uno o más elementos del DOM no se encontraron. Revisa tus IDs en index.html.");
+  throw new Error("Error de inicialización del DOM");
+}
+
 // Variables para el estado de la app
 let currentIndex = 0;
 let likes = {};
 
 let autoPlayId = null;
 let isPlaying = false;
-const AUTO_TIME = 3000; //Tiempo en milisegundos para el autoplay
+const AUTO_TIME = 2000; //Tiempo en milisegundos para el autoplay
 
 //Función para renderizar las miniaturas
 function renderThumbs() {
@@ -55,6 +60,10 @@ function renderHero ( index ){
 
   //Actualizar el contador de las imagenes
   counter.textContent = `${index + 1} / ${data.length}`;
+
+  // Actualizaciones visuales dependientes del estado
+  updateActiveThumb();
+  updateLikeBtn();
 }
 
 function changeSlide( newIndex ){
@@ -84,11 +93,46 @@ function startAutoPlay(){
   isPlaying = true;
   updatePlayButton();
 
-  counter.textContent = `${index + 1} / ${data.length}`;
 }
 
-function updatePlayButtom(){
-  
+function stopAutoPlay(){
+  clearInterval(autoPlayId);
+  autoPlayId = null;
+  isPlaying = false;
+  updatePlayButton();
+}
+
+function toggleAutoPlay(){
+  if(isPlaying){
+    stopAutoPlay();
+  } else {
+    startAutoPlay();
+  }
+}
+
+function updatePlayButton(){
+  playBtn.textContent = isPlaying ? "⏸" : "▶";
+  playBtn.dataset.state = isPlaying ? "pausa" : "play";
+}
+
+function updateCounter(){
+  counter.textContent = `${currentIndex + 1} / ${data.length}`;
+}
+
+function updateActiveThumb(){
+  document.querySelectorAll(".thumb").forEach((thumb, i) => {
+    thumb.classList.toggle("active", i === currentIndex);
+  });
+}
+
+function updateLikeBtn(){
+  const currentItem = data[currentIndex];
+  const isLiked = likes[currentItem.id];
+
+  //Actualizar el boton
+  likeBtn.textContent = isLiked ? "❤️" : "🤍";
+  likeBtn.classList.toggle("on", isLiked);
+  likeBtn.setAttribute("aria-pressed", isLiked);
 }
 
 
@@ -98,12 +142,7 @@ likeBtn.addEventListener("click", () => {
   const currentItem = data[currentIndex];
   // Cambiar de true a false
   likes[currentItem.id] = !likes[currentItem.id];
-  const isLiked = likes[currentItem.id];
-
-  //Actualizar el boton
-  likeBtn.textContent = isLiked ? "❤️" : "🤍";
-  likeBtn.classList.toggle("on", isLiked);
-  likeBtn.setAttribute("aria-pressed", isLiked);
+  updateLikeBtn();
 });
 
 //Evento para manejar el click en las miniaturas
@@ -111,12 +150,27 @@ thumbs.addEventListener("click", (e) => {
   const thumb = e.target.closest(".thumb");
   if (!thumb) return; //Si no se hizo click en una miniatura, salir
 
-  //Obtener el indice de la miniatura desde el atributo data-index
-  currentIndex = Number(thumb.dataset.index);
-
-  //Actualizar el visor principal
-  renderHero(currentIndex);
+  const thumbIndex = Number(thumb.dataset.index);
+  if (Number.isNaN(thumbIndex)) return;
+  changeSlide(thumbIndex);
 });
 
+prevBtn.addEventListener("click", prevSlide);
+nextBtn.addEventListener("click", nextSlide);
+playBtn.addEventListener("click", toggleAutoPlay);
+
+//Eventos de teclado 
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") {
+    nextSlide();
+  } 
+  if (e.key === "ArrowLeft") {
+    prevSlide();
+  }
+});
+
+// Actualizar estado visual inicial
 renderThumbs();
 renderHero(currentIndex);
+updateActiveThumb();
+updateLikeBtn();
